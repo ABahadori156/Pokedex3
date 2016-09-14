@@ -7,11 +7,13 @@
 //
 
 import UIKit
+import AVFoundation
 
 class ViewController: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     @IBOutlet weak var collectionView: UICollectionView!
     
     var pokemonArray = [Pokemon]()
+    var musicPlayer: AVAudioPlayer!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -19,6 +21,22 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
         collectionView.dataSource = self
         
         parsePokemonCSV()
+        initAudio()
+    }
+    
+    
+    //AUDIO FUNCTION
+    func initAudio() {
+        let path = Bundle.main.path(forResource: "music", ofType: "mp3")!
+        
+        do {
+            musicPlayer = try AVAudioPlayer(contentsOf: URL(string: path)!)
+            musicPlayer.prepareToPlay()
+            musicPlayer.numberOfLoops = -1
+            musicPlayer.play()
+        } catch {
+            
+        }
     }
     
     //POKEMON DATA - THIS WILL PARSE THE POKEMON DATA FROM THE CSV.SWIFT JSON-LOOKING FILE
@@ -82,5 +100,20 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
         return CGSize(width: 105, height: 105)
     }
 
+    @IBAction func musicBtnPressed(_ sender: UIButton) {
+        if musicPlayer.isPlaying {
+            musicPlayer.pause()
+            //When it's playing, it's fully opaque. When it's paused, it's transparent
+            sender.alpha = 0.2
+        } else {
+            musicPlayer.play()
+            sender.alpha = 1.0
+        }
+    }
+    
+    
+
+    
+    
 }
 
