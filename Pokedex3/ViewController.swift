@@ -127,6 +127,15 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         
+        var poke: Pokemon!
+        
+        if inSearchMode {
+            poke = filteredPokemonArray[indexPath.row]
+        } else {
+            poke = pokemonArray[indexPath.row]
+        }
+        
+        performSegue(withIdentifier: "PokemonDetailVC", sender: poke)
     }
     
     //This returns how many objects in the Collection View
@@ -148,6 +157,8 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
         return CGSize(width: 105, height: 105)
     }
 
+    
+    //MUSIC BUTTON FUNCTION
     @IBAction func musicBtnPressed(_ sender: UIButton) {
         if musicPlayer.isPlaying {
             musicPlayer.pause()
@@ -159,6 +170,17 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
         }
     }
     
+    //SEGUEWAY
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        //This happens before the segue occurs, how we pass data between VC's
+        if segue.identifier == "PokemonDetailVC" {
+            if let detailsVC = segue.destination as? PokemonDetailVC {
+                if let poke = sender as? Pokemon {
+                    detailsVC.pokemonDetail = poke
+                }
+            }
+        }
+    }
     
 
     
