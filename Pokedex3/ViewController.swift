@@ -10,22 +10,53 @@ import UIKit
 
 class ViewController: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     @IBOutlet weak var collectionView: UICollectionView!
+    
+    var pokemonArray = [Pokemon]()
 
     override func viewDidLoad() {
         super.viewDidLoad()
         collectionView.delegate = self
         collectionView.dataSource = self
         
-        
+        parsePokemonCSV()
     }
+    
+    //POKEMON DATA - THIS WILL PARSE THE POKEMON DATA FROM THE CSV.SWIFT JSON-LOOKING FILE
+    func parsePokemonCSV() {
+        //Here we create a path to the csv.swift file
+        let path = Bundle.main.path(forResource: "pokemon", ofType: "csv")!
+        
+        do {
+            //We're going to use the parser, but it could produce an error so we'll do a do-catch
+            let csv = try CSV(contentsOfURL: path)
+            let rows = csv.rows
+            print(rows)
+            
+                // We want to pull out the data from the CSV.SWIFT, we want the PokeID and the name. We loop through each row and pull out the data and create a new Pokemon class and append that to new array Pokemon we created on this VC
+            
+            for row in rows {
+                let pokeID = Int(row["id"]!)!
+                let name = row["identifier"]!
+                
+                let poke = Pokemon(name: name, pokedexId: pokeID)
+                pokemonArray.append(poke)
+            }
+            
+        } catch let error as NSError {
+            print(error.debugDescription)
+        }
+    }
+
 
   
     //COLLECTIONVIEW REQUIRED METHODS
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         
         if let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PokeCell", for: indexPath) as? PokeCell {
-            let pokemon = Pokemon(name: "Pokemon", pokedexId: indexPath.row)
-            cell.configureCell(pokemon: pokemon)
+            
+            //We show the pokemon we have in our array at that indexPath.row and then pass the Poke into the configureCell function to assign it's name and thumbImg
+            let poke = pokemonArray[indexPath.row]
+            cell.configureCell(poke)
             
             return cell
         } else {
@@ -39,7 +70,7 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
     
     //This returns how many objects in the Collection View
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 30
+        return pokemonArray.count
     }
     
     func numberOfSections(in collectionView: UICollectionView) -> Int {
