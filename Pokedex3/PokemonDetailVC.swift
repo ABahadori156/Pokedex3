@@ -37,23 +37,28 @@ class PokemonDetailVC: UIViewController {
         pokedexLbl.text = "\(pokemonDetail.pokedexId)"
         
         pokemonDetail.downloadPokemonDetail {
-          
-
-            //Whatever we write will only be called after the network call is complete!
-            //Whenever the data is available, we want to update the UI to have that data
             self.updateUI()
         }
     }
     
     func updateUI() {
-        //We have the data now so let's update the properties
         self.attackLbl.text = self.pokemonDetail.attack
         self.defenseLbl.text = self.pokemonDetail.defense
         self.heightLbl.text = self.pokemonDetail.height
         self.weightLbl.text = self.pokemonDetail.weight
         self.pokedexLbl.text = "\(self.pokemonDetail.pokedexId)"
         self.typeLbl.text = self.pokemonDetail.type
+        self.descriptionLbl.text = self.pokemonDetail.description
         
+        if pokemonDetail.nextEvolutionId == "" {
+            evoLbl.text = "No Evolutions"
+            nextEvoImg.isHidden = true
+        } else {
+            nextEvoImg.isHidden = false
+            nextEvoImg.image = UIImage(named: pokemonDetail.nextEvolutionId)
+            let str = "Next Evolution: \(pokemonDetail.nextEvolutionName) - LVL \(pokemonDetail.nextEvolutionLevel)"
+            evoLbl.text = str
+        }
     }
 
     @IBAction func backBtnPressed(_ sender: UIButton) {
@@ -63,6 +68,3 @@ class PokemonDetailVC: UIViewController {
 
 }
 
-//Network calls are asynchronous, meaning we don't know when the network tasks will be completed
-//So in the detailVC, we can't just start setting the labels to those variables because it would crash because they aren't immediately available on viewDidLoad
-//So we want to have a way to let the ViewController know when that network call data will be available - we do that using a closure

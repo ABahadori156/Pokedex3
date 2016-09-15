@@ -10,7 +10,7 @@ import Foundation
 import Alamofire
 
 class Pokemon {
-    fileprivate var _name: String!  //We know it exists so we unwrap it
+    fileprivate var _name: String!
     fileprivate var _pokedexId: Int!
     private var _description: String!
     private var _type: String!
@@ -19,10 +19,32 @@ class Pokemon {
     private var _weight: String!
     private var _attack: String!
     private var _nextEvolutionTxt: String!
+    private var _nextEvolutionName: String!
+    private var _nextEvolutionId: String!
+    private var _nextEvolutionLevel: String!
     private var _pokemonURL: String!
+
     
-    //SETTING THE GETTERS - We want to protect the data and we are providing an actual value or if the value is nil, app doesn't crash. 
-    //When we request the data from the class, we are getting an actual value OR if there isn't a value, instead of nil we'll get an empty string
+    var nextEvolutionName: String {
+        if _nextEvolutionName == nil {
+            _nextEvolutionName = ""
+        }
+        return _nextEvolutionName
+    }
+    
+    var nextEvolutionId: String {
+        if _nextEvolutionId == nil {
+            _nextEvolutionId = ""
+        }
+        return _nextEvolutionId
+    }
+    
+    var nextEvolutionLevel: String {
+        if _nextEvolutionLevel == nil {
+            _nextEvolutionLevel = ""
+        }
+        return _nextEvolutionLevel
+    }
     
     var description: String {
         if _description == nil {
@@ -89,19 +111,10 @@ class Pokemon {
         self._pokemonURL = "\(URL_BASE)\(URL_POKEMON)\(self.pokedexId)/"
     }
     
-    //So now whenever we create a Pokemon, we also want to create the API URL
-    //The API works off each individual Pokemon so at the end of the url it's something like http://pokeapi.co/api/v1/pokemon/1 and that'd be for Bulbasaur. We use the pokedexID we get from the pokemon.csv and the integers are the same for Pokemon on the pokeapi.co API
-    
-    //Whenever we click on one of the Pokemon, and we go to the detailVC, it's then where we want to make the network call and pull down that data. This is called LAZY LOADING - alternative to making 718 network calls for all Pokemon off the bat
-    
-    //Network calls are asynchronous, meaning we don't know when the network tasks will be completed
-    //So in the detailVC, we can't just start setting the labels to those variables because it would crash because they aren't immediately available on viewDidLoad
-    //So we want to have a way to let the ViewController know when that network call data will be available - we do that using a closure
     
     func downloadPokemonDetail(completed: @escaping DownloadComplete) {
         Alamofire.request(_pokemonURL, method: .get).responseJSON { response in
             
-            //Here we create an object dict that contains the entire JSON we pulled for the Pokemon's details
             if let dict = response.result.value as? Dictionary<String, AnyObject> {
                 
                 if let weight = dict["weight"] as? String {
@@ -139,6 +152,55 @@ class Pokemon {
                     print(self._type)
                 } else {
                     self._type = ""
+                }
+                
+                //DESCRIPTIONS OF POKEMON
+                if let descriptions = dict["descriptions"] as? [Dictionary<String, String>] , descriptions.count > 0 {
+                    if let url = descriptions[0]["resource_uri"] {
+                        let descURL = "\(URL_BASE)\(url)"
+                        
+                        Alamofire.request(descURL, method: .get).responseJSON(completionHandler: { (response) in
+                            if let descDict = response.result.value as? Dictionary<String, AnyObject> {
+                                if let description = descDict["description"] as? String {
+                                    let newDescription = description.replacingOccurrences(of: "POKMON", with: "pokémon")
+                                    self._description = newDescription
+                                    print(newDescription)
+                                }
+                            }
+                            completed()
+                        })
+                    }
+                } else {
+                    self._description = ""
+                }
+                
+                //EVOLUTION OF POKEMON
+                if let evolutions = dict["evolutions"] as? [Dictionary<String, AnyObject>] , evolutions.count > 0 {
+                    if let toEvo = evolutions[0]["to"] as? String {
+                        //Only Using Evolutions that exclude 'mega'
+                        if toEvo.range(of: "mega") == nil {
+                            self._nextEvolutionName = toEvo
+                            
+                            if let uri = evolutions[0]["resource_uri"] as? String {
+                                let newStr = uri.replacingOccurrences(of: "/api/v1/pokemon/", with: "")
+                                let nextEvoId = newStr.replacingOccurrences(of: "/", with: "")
+                                
+                                self._nextEvolutionId = nextEvoId
+                                
+                                //IF THE POKEMON HAS A LEVEL IT EVOLVES TOO ..
+                                if let lvlExist = evolutions[0]["level"] {
+                                    if let lvl = lvlExist as? Int {
+                                        self._nextEvolutionLevel = "\(lvl)"
+                                    }
+                                } else {
+                                    self._nextEvolutionLevel = ""
+                                }
+                            }
+                        }
+                    }
+                    print(self.nextEvolutionLevel)
+                    print(self.nextEvolutionId)
+                    print(self.nextEvolutionName)
                 }
                 
                 print(self._weight)
