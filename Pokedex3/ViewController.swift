@@ -28,7 +28,7 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
         searchBar.returnKeyType = UIReturnKeyType.done
         
         parsePokemonCSV()
-        initAudio()
+//        initAudio()
     }
     
     
@@ -137,6 +137,8 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
         
         performSegue(withIdentifier: "PokemonDetailVC", sender: poke)
     }
+    
+    
     
     //This returns how many objects in the Collection View
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {

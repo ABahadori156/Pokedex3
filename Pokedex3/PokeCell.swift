@@ -15,6 +15,7 @@ class PokeCell: UICollectionViewCell {
     
     var pokemon: Pokemon!
     
+    //ROUNDING THE CELL'S BORDER
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         
